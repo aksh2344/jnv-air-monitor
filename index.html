@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>JNV Smart Air Monitor</title>
+  <meta name="description" content="Smart Air Monitoring System for JNV Chandpur, Bijnor campus with real-time DHT22 temperature/humidity, MQ-135 gas telemetry, and air comfort indexing." />
+  <meta property="og:title" content="JNV Smart Air Monitor" />
+  <meta property="og:description" content="Smart Air Monitoring System for JNV Chandpur, Bijnor campus with real-time DHT22 temperature/humidity, MQ-135 gas telemetry, and air comfort indexing." />
+  <link rel="icon" type="image/png" href="jnv_logo.png" />
+  
+  <!-- Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Standalone Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+  
+  <!-- D3.js v7 Library for Advanced Data Visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+</head>
+<body>
+
+  <!-- Main Viewport Container -->
+  <div class="app-viewport">
+
+    <!-- Device Frame / Mockup -->
+    <div id="device-phone-frame" class="device-frame">
+
+      <!-- ========================================================================
+           STARTUP / SPLASH SCREEN OVERLAY
+           Footer Requirement: "Developed by Akshay & Rudra Anusagar | Mentored by Rohitash (ATL Sir)"
+           ======================================================================== -->
+      <div id="startup-splash-screen" class="startup-splash-screen" role="dialog" aria-modal="true" aria-label="JNV Smart Air Monitor Startup Screen">
+        <div class="splash-particles-bg"></div>
+
+        <!-- Top School Affiliation -->
+        <div class="splash-top-header">
+          <div class="splash-school-badge">
+            <span class="splash-live-dot"></span>
+            <span>JAWAHAR NAVODAYA VIDYALAYA • BIJNOR</span>
+          </div>
+          <span class="splash-atl-badge">ATL INNOVATION CELL</span>
+        </div>
+
+        <!-- Central Branding & Animated Sensor Node -->
+        <div class="splash-center-content">
+          <div class="splash-emblem-wrap">
+            <div class="splash-glow-ring"></div>
+            <div class="splash-pulse-wave"></div>
+            <img src="jnv_logo.png" alt="JNV Bijnor Logo" class="splash-logo-image" onerror="this.src='public/jnv_logo.png'; this.onerror=null;" />
+          </div>
+
+          <h1 class="splash-app-title">JNV Smart Air Monitor</h1>
+          <p class="splash-app-subtitle">IoT Environmental Monitoring Station</p>
+
+          <div class="splash-feature-tags">
+            <span class="splash-feature-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"/></svg>
+              DHT22 Sensor
+            </span>
+            <span class="splash-feature-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              MQ-135 Gas
+            </span>
+            <span class="splash-feature-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg>
+              ESP Microcontroller
+            </span>
+            <span class="splash-feature-pill">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+              Firebase Cloud
+            </span>
+          </div>
+
+          <!-- Progress loading bar -->
+          <div class="splash-loading-box">
+            <div class="splash-loading-bar-track">
+              <div class="splash-loading-bar-fill"></div>
+            </div>
+            <div class="splash-loading-status" id="splash-status-text">Calibrating DHT22 &amp; MQ-135 Telemetry Streams...</div>
+          </div>
+        </div>
+
+        <!-- Startup/Splash Screen (Bottom Footer - Exact User Requirement) -->
+        <div class="splash-screen-footer">
+          <div class="splash-footer-credit-box">
+            <div class="splash-credit-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </div>
+            <p class="splash-credit-text">Developed by Rudra and Anusagar | Mentored by Rohitash (ATL Sir)</p>
+          </div>
+          <button id="btn-skip-splash" class="splash-enter-btn" title="Tap to enter dashboard">
+            <span>Enter Dashboard</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Phone Status Bar -->
+      <div class="phone-status-bar">
+        <span id="status-bar-clock" class="status-left">09:41</span>
+        <div class="status-notch">
+          <div class="notch-speaker"></div>
+          <div class="notch-camera"></div>
+        </div>
+        <div class="status-right">
+          <!-- Wi-Fi Icon -->
+          <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+            <line x1="12" y1="20" x2="12.01" y2="20"></line>
+          </svg>
+          <!-- 5G Signal -->
+          <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.05em;">5G</span>
+          <!-- Battery Icon -->
+          <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect>
+            <line x1="22" y1="11" x2="22" y2="13"></line>
+            <rect x="4" y="9" width="10" height="6" fill="currentColor"></rect>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Top Action Bar (Pipeline Status & Quick Tools) -->
+      <div class="top-action-bar">
+        <div class="pipeline-badge-group">
+          <div id="live-indicator-badge" class="live-indicator-pill offline">
+            <span id="pulse-dot" class="pulse-dot offline"></span>
+            <span id="live-status-text">CONNECTING</span>
+          </div>
+          <span id="pipeline-sub-text" style="font-size: 10.5px; color: var(--text-muted); font-family: var(--font-mono);">Firebase Sync</span>
+        </div>
+
+        <div class="top-actions-right">
+          <!-- Refresh Button -->
+          <button id="btn-refresh-telemetry" class="icon-button" title="Fetch latest telemetry reading">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/>
+            </svg>
+          </button>
+
+          <!-- Settings Button -->
+          <button id="btn-open-settings" class="icon-button" title="Configure Firebase API URL">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+          </button>
+
+          <!-- ESP32 Code & Hardware Button -->
+          <button id="btn-open-code" class="icon-button" title="ESP32 Code & Wiring Instructions">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="16 18 22 12 16 6"></polyline>
+              <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+          </button>
+
+          <!-- Toggle Frame / Full Width -->
+          <button id="btn-toggle-frame" class="icon-button" title="Toggle Phone Frame / Wide Layout">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+              <line x1="12" y1="18" x2="12.01" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- App Header -->
+      <div class="app-header">
+        <div class="header-brand">
+          <div class="header-logo-container">
+            <img src="jnv_logo.png" alt="JNV Bijnor Logo" class="header-logo-img" onerror="this.src='public/jnv_logo.png'; this.onerror=null;" />
+          </div>
+          <div class="header-titles">
+            <div class="header-pre-row">
+              <span class="school-tag">JNV Chandpur, Bijnor</span>
+              <span class="header-house-pill" title="Assigned House: Nilgiri (Senior) | House Master: Akhilesh Sir">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                Nilgiri (Senior)
+              </span>
+              <span class="header-creator-pill" title="Creators / Developers: Rudra and Anusagar">
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Rudra &amp; Anusagar
+              </span>
+            </div>
+            <h1 class="app-main-title">JNV Smart Air Monitor</h1>
+            <div class="header-creators-caption">
+              <span>Creators: <strong>Rudra and Anusagar</strong></span>
+              <span class="header-dot-sep">•</span>
+              <span>House Master: <strong>Akhilesh Sir</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mode Switcher Bar: LIVE MODE vs DEMO MODE -->
+      <div class="mode-switcher-container">
+        <div class="mode-switcher-bar">
+          <div class="mode-switcher-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="2"></circle>
+              <path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"></path>
+            </svg>
+            <span>Telemetry Pipeline</span>
+          </div>
+
+          <div class="mode-buttons-group">
+            <button id="btn-mode-live" class="mode-btn active live">
+              <span>LIVE MODE</span>
+            </button>
+            <button id="btn-mode-demo" class="mode-btn">
+              <span>DEMO MODE</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Offline Warning Banner (shown when LIVE mode fails to reach Firebase) -->
+      <div id="offline-warning-banner" class="offline-banner" style="display: none;">
+        <div class="offline-banner-top">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <div>
+            <div class="offline-title">Firebase Station Unreachable (OFFLINE)</div>
+            <div id="offline-error-desc" class="offline-desc">Cannot establish connection with the configured Firebase REST endpoint. In LIVE MODE, simulated numbers are never fabricated.</div>
+          </div>
+        </div>
+        <div class="offline-actions">
+          <button id="btn-banner-settings" class="banner-btn settings-btn">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            <span>Set Firebase URL</span>
+          </button>
+          <button id="btn-banner-demo" class="banner-btn demo-btn">
+            <span>Switch to Demo</span>
+          </button>
+          <button id="btn-banner-retry" class="banner-btn retry-btn">Retry Now</button>
+        </div>
+      </div>
+
+      <!-- Screens Viewport -->
+      <div class="screens-viewport">
+
+        <!-- ================================================================
+             SCREEN 1: HOME (DASHBOARD)
+             ================================================================ -->
+        <div id="screen-home" class="screen-view active">
+
+          <!-- Circular Gas / Air Quality Gauge Card -->
+          <div class="aqi-gauge-card">
+            <div class="aqi-gauge-top-bar">
+              <span class="aqi-title-tag">MQ-135 Air Quality / Gas Level</span>
+              <div class="timestamp-pill">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span id="gauge-relative-time">Just now</span>
+              </div>
+            </div>
+
+            <!-- SVG 270-Degree Arc Gauge -->
+            <div class="gauge-svg-wrapper">
+              <svg class="gauge-svg" viewBox="0 0 200 200">
+                <!-- Background Arc -->
+                <circle class="gauge-track" cx="100" cy="100" r="80" stroke-dasharray="377 502" stroke-dashoffset="-62" />
+                <!-- Dynamic Progress Arc -->
+                <circle id="gauge-circle-progress" class="gauge-progress" cx="100" cy="100" r="80" stroke-dasharray="377 502" stroke-dashoffset="377" stroke="#10b981" />
+              </svg>
+
+              <!-- Center Gauge Typography -->
+              <div class="gauge-center-content">
+                <span id="gauge-gas-number" class="gauge-aqi-number">412</span>
+                <span class="gauge-gas-unit-tag" style="font-size: 11px; font-weight: 800; color: var(--text-muted); font-family: var(--font-mono); letter-spacing: 0.08em; margin-top: -2px;">PPM</span>
+                <span id="gauge-gas-label" class="gauge-aqi-label" style="color: #10b981;">SAFE</span>
+              </div>
+            </div>
+
+            <!-- Category Status Badge -->
+            <div id="gauge-category-badge" class="aqi-category-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">
+              SAFE (Clean Air)
+            </div>
+
+            <!-- Health & Advisory Text Box -->
+            <div class="aqi-advisory-box">
+              <p id="advisory-main-text" class="advisory-main">Clean and safe atmospheric gas levels. Negligible hazardous volatile gases or smoke.</p>
+              <p id="advisory-campus-text" class="advisory-campus">Campus Advisory: <strong>All campus classrooms, science labs, and outdoor activities permitted without restrictions.</strong></p>
+            </div>
+
+            <!-- Gauge Bottom Metadata: Exact Reading Timestamp -->
+            <div class="gauge-bottom-meta">
+              <div class="meta-exact-time">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <span style="color: var(--text-muted); font-size: 10px;">LATEST:</span>
+                <span id="gauge-exact-time">12 Sep 2026, 06:30:15 PM</span>
+              </div>
+              <span id="gauge-pipeline-state" class="meta-pipeline-state" style="color: var(--emerald-400);">Real Firebase Telemetry</span>
+            </div>
+          </div>
+
+          <!-- Section Heading -->
+          <div class="section-heading-row">
+            <h2>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              <span>Real-Time Sensor Probes</span>
+            </h2>
+            <span style="font-size: 10px; font-family: var(--font-mono); color: var(--text-muted);">DHT22 + MQ-135</span>
+          </div>
+
+          <!-- 4 Metric Cards Grid -->
+          <div class="sensor-grid">
+
+            <!-- Card 1: MQ-135 Gas Level -->
+            <div id="card-gas" class="sensor-card">
+              <div class="sensor-top-accent" style="background: var(--emerald-400);"></div>
+              <div class="sensor-card-header">
+                <div class="sensor-icon-box" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--emerald-400);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <span id="badge-gas" class="sensor-status-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Safe</span>
+              </div>
+              <div class="sensor-titles">
+                <div class="sensor-main-title">
+                  <span>Air Quality / Gas</span>
+                  <span class="sensor-probe-tag">MQ-135</span>
+                </div>
+                <div class="sensor-subtitle">Gas concentration level</div>
+              </div>
+              <div class="sensor-values-row">
+                <div class="sensor-value-group">
+                  <span id="val-gas" class="sensor-number">412</span>
+                  <span class="sensor-unit">PPM</span>
+                </div>
+                <div id="trend-gas" class="sensor-trend-box"></div>
+              </div>
+              <div class="sensor-footer-note">
+                <span>Safe: &lt;800 PPM</span>
+                <span id="desc-gas-status" style="color: var(--emerald-400); font-weight: 700;">Safe Air</span>
+              </div>
+            </div>
+
+            <!-- Card 2: Temperature (with °C / °F toggle) -->
+            <div id="card-temp" class="sensor-card">
+              <div class="sensor-top-accent" style="background: var(--amber-400);"></div>
+              <div class="sensor-card-header">
+                <div class="sensor-icon-box" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: var(--amber-400);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path></svg>
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <span id="badge-temp" class="sensor-status-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Normal</span>
+                  <div class="temp-unit-toggle" id="temp-unit-toggle" title="Toggle °C / °F">
+                    <button type="button" id="btn-unit-c" class="unit-toggle-btn active" data-unit="C">°C</button>
+                    <button type="button" id="btn-unit-f" class="unit-toggle-btn" data-unit="F">°F</button>
+                  </div>
+                </div>
+              </div>
+              <div class="sensor-titles">
+                <div class="sensor-main-title">
+                  <span>Temperature</span>
+                  <span class="sensor-probe-tag">DHT22</span>
+                </div>
+                <div class="sensor-subtitle">Ambient campus reading</div>
+              </div>
+              <div class="sensor-values-row">
+                <div class="sensor-value-group">
+                  <span id="val-temp" class="sensor-number">28.4</span>
+                  <span id="unit-temp" class="sensor-unit">°C</span>
+                </div>
+                <div id="trend-temp" class="sensor-trend-box"></div>
+              </div>
+              <div class="sensor-footer-note">
+                <span>Range: -40 to +80°C</span>
+                <span>±0.5°C Prec.</span>
+              </div>
+            </div>
+
+            <!-- Card 3: Relative Humidity -->
+            <div id="card-hum" class="sensor-card">
+              <div class="sensor-top-accent" style="background: #38bdf8;"></div>
+              <div class="sensor-card-header">
+                <div class="sensor-icon-box" style="background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                </div>
+                <span id="badge-hum" class="sensor-status-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Optimal</span>
+              </div>
+              <div class="sensor-titles">
+                <div class="sensor-main-title">
+                  <span>Humidity</span>
+                  <span class="sensor-probe-tag">DHT22</span>
+                </div>
+                <div class="sensor-subtitle">Relative atmospheric</div>
+              </div>
+              <div class="sensor-values-row">
+                <div class="sensor-value-group">
+                  <span id="val-hum" class="sensor-number">62.0</span>
+                  <span class="sensor-unit">%</span>
+                </div>
+                <div id="trend-hum" class="sensor-trend-box"></div>
+              </div>
+              <div class="sensor-footer-note">
+                <span>Range: 0-100% RH</span>
+                <span>±2% Prec.</span>
+              </div>
+            </div>
+
+            <!-- Card 4: Calculated Air Comfort Level (Heat Index & Dew Point) -->
+            <div id="card-comfort" class="sensor-card">
+              <div class="sensor-top-accent" style="background: var(--purple-400);"></div>
+              <div class="sensor-card-header">
+                <div class="sensor-icon-box" style="background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: var(--purple-400);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v2m0 14v2M3 12h2m14 0h2m-3.5-6.5l-1.5 1.5M7 17l-1.5 1.5M17 17l1.5 1.5M7 7L5.5 5.5"/><circle cx="12" cy="12" r="4"/></svg>
+                </div>
+                <span id="badge-comfort" class="sensor-status-badge" style="background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4);">Comfortable</span>
+              </div>
+              <div class="sensor-titles">
+                <div class="sensor-main-title">
+                  <span>Air Comfort Level</span>
+                  <span class="sensor-probe-tag">DHT22 CALC</span>
+                </div>
+                <div class="sensor-subtitle">Heat Index &amp; Dew Point</div>
+              </div>
+              <div class="comfort-metrics-row">
+                <div class="comfort-metric-column">
+                  <span class="comfort-sub-label">Heat Index</span>
+                  <div class="sensor-value-group">
+                    <span id="val-heat-index" class="sensor-number" style="font-size: 21px;">29.8</span>
+                    <span id="unit-heat-index" class="sensor-unit">°C</span>
+                  </div>
+                </div>
+                <div class="comfort-divider"></div>
+                <div class="comfort-metric-column">
+                  <span class="comfort-sub-label">Dew Point</span>
+                  <div class="sensor-value-group">
+                    <span id="val-dew-point" class="sensor-number" style="font-size: 21px;">17.5</span>
+                    <span id="unit-dew-point" class="sensor-unit">°C</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sensor-footer-note">
+                <span id="comfort-status-desc" style="color: var(--emerald-400); font-weight: 700;">Optimal Comfort</span>
+                <span>Rothfusz &amp; Magnus</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Hardware & Cloud Pipeline Snapshot Card -->
+          <div class="pipeline-card">
+            <div class="pipeline-header">
+              <span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.2"><path d="M5 12.55a11 11 0 0 1 14.08 0"></path><path d="M1.42 9a16 16 0 0 1 21.16 0"></path><path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path><line x1="12" y1="20" x2="12.01" y2="20"></line></svg>
+                <span>Hardware &amp; Cloud Pipeline</span>
+              </span>
+              <span style="font-family: var(--font-mono); color: var(--cyan-400); font-size: 10.5px;">ESP32 → Firebase → Web</span>
+            </div>
+            <div class="pipeline-diagram">
+              <div class="pipeline-step">
+                <div class="step-label">Gas Probe</div>
+                <div class="step-val">MQ-135 (PPM)</div>
+              </div>
+              <div class="pipeline-step">
+                <div class="step-label">Temp / Hum</div>
+                <div class="step-val">DHT22 (AM2302)</div>
+              </div>
+              <div class="pipeline-step">
+                <div class="step-label">Cloud Sync</div>
+                <div id="pipeline-cloud-sync-state" class="step-val" style="color: var(--emerald-400);">Firebase Active</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================================================================
+             SCREEN 2: STATISTICS (CHARTS & ANALYTICS)
+             ================================================================ -->
+        <div id="screen-statistics" class="screen-view">
+          
+          <!-- ============================================================
+               D3.JS MULTI-LINE VISUAL SECTION: 24H TEMP VS HEAT INDEX
+               ============================================================ -->
+          <div class="d3-visual-section-card" id="section-d3-temp-heat">
+            <div class="d3-section-top-row">
+              <div class="d3-badge-group">
+                <span class="d3-engine-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                  D3.js ENGINE
+                </span>
+                <span class="d3-time-badge">24H COMPARISON</span>
+              </div>
+              <div class="d3-live-delta-pill" id="d3-delta-pill" title="Difference between apparent Heat Index and ambient Temperature">
+                <span class="d3-delta-label">THERMAL DELTA:</span>
+                <span id="d3-delta-val" class="d3-delta-number">+0.0°</span>
+              </div>
+            </div>
+
+            <div class="d3-section-title-wrap">
+              <h2 class="d3-section-heading">Temperature &amp; Heat Index Trends</h2>
+              <p class="d3-section-desc">Continuous D3.js multi-line analytics comparing ambient temperature against perceived thermal comfort (Heat Index) over the last 24 hours.</p>
+            </div>
+
+            <!-- Dual-Series Legend & Real-time Indicator -->
+            <div class="d3-legend-bar">
+              <div class="d3-legend-item temp-series">
+                <span class="d3-series-line temp-line-glyph"></span>
+                <span class="d3-series-dot temp-dot-glyph"></span>
+                <span class="d3-legend-title">Temperature</span>
+                <span id="d3-legend-temp-val" class="d3-legend-metric">--°</span>
+              </div>
+              <div class="d3-legend-item heat-series">
+                <span class="d3-series-line heat-line-glyph"></span>
+                <span class="d3-series-dot heat-dot-glyph"></span>
+                <span class="d3-legend-title">Heat Index</span>
+                <span id="d3-legend-hi-val" class="d3-legend-metric">--°</span>
+              </div>
+            </div>
+
+            <!-- D3 Comparative Analytics Strip -->
+            <div class="d3-analytics-strip">
+              <div class="d3-analytic-box">
+                <span class="d3-box-lbl">24H PEAK HEAT INDEX</span>
+                <div id="d3-peak-hi-num" class="d3-box-num highlight-rose">--°</div>
+                <span id="d3-peak-hi-time" class="d3-box-sub">Max perceived</span>
+              </div>
+              <div class="d3-analytic-box">
+                <span class="d3-box-lbl">24H MIN TEMPERATURE</span>
+                <div id="d3-min-temp-num" class="d3-box-num highlight-cyan">--°</div>
+                <span id="d3-min-temp-time" class="d3-box-sub">Dormitory low</span>
+              </div>
+              <div class="d3-analytic-box">
+                <span class="d3-box-lbl">COMFORT STATUS</span>
+                <div id="d3-comfort-status-label" class="d3-box-num highlight-emerald">Optimal</div>
+                <span class="d3-box-sub">Rothfusz Index</span>
+              </div>
+            </div>
+
+            <!-- Interactive D3 Chart Viewport with SVG and Tooltip -->
+            <div class="d3-chart-viewport-box" id="d3-chart-viewport-box">
+              <svg id="d3-temp-heat-svg" class="d3-svg-element" viewBox="0 0 350 200" preserveAspectRatio="none"></svg>
+              <div id="d3-chart-crosshair-tooltip" class="d3-interactive-tooltip" style="display: none;"></div>
+            </div>
+
+            <!-- D3 Interactive Instructions & Sensor Attribution -->
+            <div class="d3-card-footer-info">
+              <span class="d3-hint-text">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Hover or touch across chart to inspect simultaneous telemetry
+              </span>
+              <span class="d3-sensor-tag">DHT22 Digital Probe</span>
+            </div>
+          </div>
+          
+          <div class="stats-filter-bar">
+            <!-- Metric Pills -->
+            <div class="filter-pills-row">
+              <button class="filter-pill stat-metric-pill active" data-metric="gas">MQ-135 Gas (PPM)</button>
+              <button class="filter-pill stat-metric-pill" data-metric="temp">Temperature</button>
+              <button class="filter-pill stat-metric-pill" data-metric="humidity">Humidity</button>
+              <button class="filter-pill stat-metric-pill" data-metric="heatIndex">Heat Index</button>
+              <button class="filter-pill stat-metric-pill" data-metric="dewPoint">Dew Point</button>
+            </div>
+          </div>
+
+          <!-- Dynamic SVG Trend Chart Card -->
+          <div class="chart-card">
+            <div class="chart-header">
+              <span class="chart-title">Telemetry Trend (Last 24 Hours)</span>
+              <span id="chart-current-display" class="chart-current-val">412 PPM</span>
+            </div>
+
+            <div class="svg-chart-container">
+              <svg id="stats-svg-chart" class="chart-svg" viewBox="0 0 340 180"></svg>
+              <div id="stats-chart-tooltip" class="chart-tooltip"></div>
+            </div>
+          </div>
+
+          <!-- Summary Stats Grid -->
+          <div class="summary-stats-grid">
+            <div class="summary-stat-card">
+              <div class="stat-card-title">AVERAGE TELEMETRY</div>
+              <div id="stat-avg-val" class="stat-card-num">415</div>
+              <div class="stat-card-sub">Safe Gas Zone (&lt;800 PPM)</div>
+            </div>
+            <div class="summary-stat-card">
+              <div class="stat-card-title">MAXIMUM PEAK</div>
+              <div id="stat-max-val" class="stat-card-num">620</div>
+              <div class="stat-card-sub" style="color: var(--amber-400);">Recorded at 08:30 AM</div>
+            </div>
+            <div class="summary-stat-card">
+              <div class="stat-card-title">MINIMUM READING</div>
+              <div id="stat-min-val" class="stat-card-num">380</div>
+              <div class="stat-card-sub">Recorded at 04:15 AM</div>
+            </div>
+            <div class="summary-stat-card">
+              <div class="stat-card-title">LATEST REAL PACKET</div>
+              <div id="stat-cur-val" class="stat-card-num">412</div>
+              <div class="stat-card-sub" style="color: var(--cyan-400);">Verified via ESP32</div>
+            </div>
+          </div>
+
+          <!-- Time of Day Breakdown Card -->
+          <div class="time-breakdown-card">
+            <h3 style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 10px;">Time-of-Day Air Quality &amp; Gas Exposure</h3>
+            <div class="time-row">
+              <span class="time-label">Morning (06:00 - 12:00)</span>
+              <div class="time-bar-wrapper">
+                <div id="time-fill-morning" class="time-bar-fill" style="width: 25%; background: var(--emerald-400);"></div>
+              </div>
+              <span id="time-val-morning" class="time-val">420</span>
+            </div>
+            <div class="time-row">
+              <span class="time-label">Afternoon (12:00 - 17:00)</span>
+              <div class="time-bar-wrapper">
+                <div id="time-fill-afternoon" class="time-bar-fill" style="width: 28%; background: var(--emerald-400);"></div>
+              </div>
+              <span id="time-val-afternoon" class="time-val">445</span>
+            </div>
+            <div class="time-row">
+              <span class="time-label">Evening (17:00 - 21:00)</span>
+              <div class="time-bar-wrapper">
+                <div id="time-fill-evening" class="time-bar-fill" style="width: 35%; background: var(--amber-400);"></div>
+              </div>
+              <span id="time-val-evening" class="time-val">510</span>
+            </div>
+            <div class="time-row">
+              <span class="time-label">Night (21:00 - 06:00)</span>
+              <div class="time-bar-wrapper">
+                <div id="time-fill-night" class="time-bar-fill" style="width: 20%; background: var(--emerald-400);"></div>
+              </div>
+              <span id="time-val-night" class="time-val">390</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ================================================================
+             SCREEN 3: HISTORY (LOGS & CSV EXPORT)
+             ================================================================ -->
+        <div id="screen-history" class="screen-view">
+          
+          <div class="history-controls">
+            <div>
+              <h2 style="font-size: 14px; font-weight: 800; color: #fff;">Telemetry Logs</h2>
+              <p style="font-size: 11px; color: var(--text-secondary);">Historical data points recorded by station</p>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <button id="btn-export-csv" class="csv-export-btn" title="Download historical readings as CSV file">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                <span>Export CSV</span>
+              </button>
+              <button id="btn-clear-logs" class="clear-logs-btn" title="Clear log cache">Clear</button>
+            </div>
+          </div>
+
+          <!-- History Records Container -->
+          <div id="history-records-container" class="history-log-list">
+            <!-- Dynamically populated by script.js -->
+          </div>
+
+        </div>
+
+        <!-- ================================================================
+             SCREEN 4: ALERTS (CAMPUS HEALTH NOTIFICATIONS)
+             ================================================================ -->
+        <div id="screen-alerts" class="screen-view">
+          
+          <!-- Dynamic Campus Status Card -->
+          <div id="active-alert-status-card" class="alert-status-card good">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" style="flex-shrink: 0; margin-top: 2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+            <div>
+              <div id="active-alert-title" class="alert-card-title">CAMPUS AIR QUALITY: SAFE &amp; OPTIMAL</div>
+              <div id="active-alert-desc" class="alert-card-text">Atmospheric conditions at JNV Chandpur campus are clean and safe. MQ-135 gas concentration is within safe baseline limits and DHT22 thermal comfort is optimal.</div>
+            </div>
+          </div>
+
+          <!-- Department Guidelines List -->
+          <div class="department-guidelines-list">
+            
+            <div class="guideline-box">
+              <div class="guideline-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+              </div>
+              <div class="guideline-content">
+                <h3>Morning Assembly &amp; Physical Training (P.E.)</h3>
+                <p>When MQ-135 gas is Safe (&lt;800 PPM) and Heat Index &lt; 32°C, morning assembly, mass P.T., and playground sports proceed as usual. If Heat Index exceeds 38°C, outdoor activities shift to shaded or indoor covered areas with ample hydration.</p>
+              </div>
+            </div>
+
+            <div class="guideline-box">
+              <div class="guideline-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </div>
+              <div class="guideline-content">
+                <h3>Classrooms &amp; Hostel Dormitories</h3>
+                <p>Maintain continuous cross-ventilation during daylight hours. If MQ-135 gas levels enter Warning status (800–1200 PPM), windows and ventilators must be opened immediately to circulate fresh air and prevent indoor CO2 and odor buildup.</p>
+              </div>
+            </div>
+
+            <div class="guideline-box">
+              <div class="guideline-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+              </div>
+              <div class="guideline-content">
+                <h3>Science Labs &amp; Campus Infirmary Protocol</h3>
+                <p>Science laboratories utilize MQ-135 gas telemetry to detect hazardous chemical vapors (ammonia, benzene, alcohol, and smoke). The campus infirmary maintains ORS hydration packs for students during high Heat Index summer periods.</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- MQ-135 Gas & Air Quality Standards Table -->
+          <div style="background: #111827; border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px;">
+            <h3 style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 6px;">MQ-135 Gas &amp; Air Quality Standards</h3>
+            <table class="aqi-scale-table">
+              <thead>
+                <tr>
+                  <th>Range (PPM)</th>
+                  <th>Category</th>
+                  <th>Atmospheric Status &amp; Impact</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #34d399; font-weight: 700;">&lt; 800 PPM</td>
+                  <td style="color: #34d399; font-weight: 700;">Safe</td>
+                  <td>Fresh outdoor and indoor air quality; minimal trace gases</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #fde047; font-weight: 700;">800 - 1200 PPM</td>
+                  <td style="color: #fde047; font-weight: 700;">Warning</td>
+                  <td>Moderate gas/CO2 concentration; classroom cross-ventilation advised</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #f87171; font-weight: 700;">&gt; 1200 PPM</td>
+                  <td style="color: #f87171; font-weight: 700;">Hazardous</td>
+                  <td>Elevated volatile gases or smoke; inspect ventilation &amp; sources immediately</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Air Comfort (Heat Index & Dew Point) Reference Table -->
+          <div style="background: #111827; border: 1px solid var(--border-subtle); border-radius: 16px; padding: 14px;">
+            <h3 style="font-size: 13px; font-weight: 800; color: #fff; margin-bottom: 6px;">Air Comfort (Heat Index) Scale</h3>
+            <table class="aqi-scale-table">
+              <thead>
+                <tr>
+                  <th>Heat Index</th>
+                  <th>Comfort Zone</th>
+                  <th>Physical Health Advisory</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #34d399; font-weight: 700;">&lt; 27°C (&lt; 80°F)</td>
+                  <td style="color: #34d399; font-weight: 700;">Comfortable</td>
+                  <td>Optimal thermal comfort; normal sports and campus routines</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #fde047; font-weight: 700;">27°C - 32°C</td>
+                  <td style="color: #fde047; font-weight: 700;">Caution</td>
+                  <td>Fatigue possible with prolonged physical activity in sun</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #fdba74; font-weight: 700;">32°C - 41°C</td>
+                  <td style="color: #fdba74; font-weight: 700;">Extreme Caution</td>
+                  <td>Heat cramps &amp; exhaustion possible; hydrate regularly</td>
+                </tr>
+                <tr>
+                  <td style="font-family: var(--font-mono); color: #f87171; font-weight: 700;">&gt; 41°C (&gt; 105°F)</td>
+                  <td style="color: #f87171; font-weight: 700;">Danger</td>
+                  <td>Heat exhaustion likely; suspend strenuous outdoor drills</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+        <!-- ================================================================
+             SCREEN 5: ABOUT (HARDWARE & PROJECT DETAILS)
+             ================================================================ -->
+        <div id="screen-about" class="screen-view">
+          
+          <!-- School & Campus Header Card -->
+          <div class="about-hero-card">
+            <div class="about-hero-badge-row">
+              <span class="badge-chip-gov">NAVODAYA VIDYALAYA SAMITI</span>
+              <span class="badge-chip-atl">ATL INNOVATION CELL</span>
+            </div>
+            <img src="jnv_logo.png" alt="JNV Emblem" class="about-logo-img" onerror="this.src='public/jnv_logo.png'; this.onerror=null;" />
+            <h2 class="about-school-name">Jawahar Navodaya Vidyalaya</h2>
+            <span class="about-affiliation">Chandpur, District Bijnor (Uttar Pradesh)</span>
+            <span class="about-ministry-note">Autonomous Institution under Ministry of Education, Govt. of India</span>
+          </div>
+
+          <!-- ================================================================
+               ABOUT HOUSE SECTION (NILGIRI SENIOR)
+               House Name: Nilgiri (Senior)
+               House Master: Akhilesh Sir
+               ================================================================ -->
+          <div class="about-card about-house-card">
+            <div class="house-card-header">
+              <div class="house-badge-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+              </div>
+              <div class="house-title-block">
+                <span class="house-system-tag">NAVODAYA RESIDENTIAL HOUSE SYSTEM</span>
+                <h3 class="house-name-heading">About House: Nilgiri (Senior)</h3>
+              </div>
+              <span class="house-color-pill">Nilgiri Blue</span>
+            </div>
+
+            <!-- House Info Showcase Grid -->
+            <div class="house-info-grid">
+              <!-- House Name Box -->
+              <div class="house-info-box">
+                <div class="house-info-icon-wrap house-name-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  </svg>
+                </div>
+                <div class="house-info-content">
+                  <span class="house-info-label">House Name</span>
+                  <div class="house-info-value">Nilgiri (Senior)</div>
+                  <span class="house-info-sub">Senior Dormitory &amp; Study Wing</span>
+                </div>
+              </div>
+
+              <!-- House Master Box -->
+              <div class="house-info-box master-box">
+                <div class="house-info-icon-wrap house-master-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="house-info-content">
+                  <span class="house-info-label">House Master</span>
+                  <div class="house-info-value highlight-master">Akhilesh Sir</div>
+                  <span class="house-info-sub">House Administration &amp; Student Care</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- House Environmental Health & Mission Banner -->
+            <div class="house-mission-banner">
+              <div class="house-accent-stripe"></div>
+              <div class="house-mission-text">
+                <span class="house-mission-title">Dormitory Microclimate &amp; Air Quality Node</span>
+                <p class="house-mission-desc">
+                  This IoT station is deployed for continuous indoor environmental surveillance across <strong>Nilgiri (Senior) House</strong> under the leadership of <strong>Akhilesh Sir</strong>, monitoring real-time DHT22 thermal comfort and MQ-135 air safety for resident scholars.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Project Description Card (Verbatim User Requirement) -->
+          <div class="about-card about-project-card">
+            <div class="about-card-title-row">
+              <div class="card-title-group">
+                <span class="about-sub-label">PROJECT NAME</span>
+                <h3 class="about-main-project-heading">JNV Smart Air Monitor</h3>
+              </div>
+              <div class="iot-status-badge">
+                <span class="pulse-dot online"></span>
+                <span>Active IoT Node</span>
+              </div>
+            </div>
+
+            <div class="about-description-box">
+              <div class="quote-accent-bar"></div>
+              <p class="about-description-text">
+                JNV Smart Air Monitor is an IoT-based environmental monitoring application. It provides real-time tracking of ambient temperature and humidity levels using a DHT22 sensor and ESP microcontroller connected via Firebase. Designed to deliver high accuracy and seamless live data visualisations for campus and laboratory monitoring.
+              </p>
+            </div>
+          </div>
+
+          <!-- Project Team & Mentorship Showcase (Verbatim User Requirement) -->
+          <div class="about-card about-team-card">
+            <div class="about-section-header">
+              <div class="about-section-title-wrap">
+                <span class="about-section-tag">PROJECT TEAM &amp; MENTORSHIP</span>
+                <h3 class="about-section-h3">Core Contributors</h3>
+              </div>
+              <span class="about-team-badge">Atal Tinkering Lab</span>
+            </div>
+
+            <div class="team-cards-list">
+              <!-- Creators / Developers: Rudra and Anusagar -->
+              <div class="team-person-card highlight-dev-card">
+                <div class="person-role-indicator dev-indicator">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="person-info-col">
+                  <div class="person-role-tag">Creators / Developers</div>
+                  <div class="person-name highlight-creators-name">Rudra and Anusagar</div>
+                  <div class="person-duty">System architecture, IoT sensor telemetry integration (DHT22 &amp; MQ-135), D3.js comparative analytics, responsive UI design, and Firebase cloud synchronization.</div>
+                </div>
+              </div>
+
+              <!-- Project Mentor: Rohitash (ATL Sir) -->
+              <div class="team-person-card mentor-highlight-card">
+                <div class="person-role-indicator mentor-indicator">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                </div>
+                <div class="person-info-col">
+                  <div class="person-role-tag mentor-tag">Project Mentor</div>
+                  <div class="person-name">Rohitash (ATL Sir)</div>
+                  <div class="person-duty">Faculty in-charge, Atal Tinkering Lab (ATL). Technical guidance, IoT telemetry verification, campus deployment supervision, and research mentorship.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Key Project Details Summary Grid -->
+          <div class="about-card">
+            <div style="font-weight: 800; font-size: 11.5px; color: var(--cyan-400); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px;">
+              Project Identity &amp; Details
+            </div>
+            <div class="project-summary-grid">
+              <div class="summary-cell">
+                <span class="cell-label">Project Name</span>
+                <span class="cell-value highlight-cyan">JNV Smart Air Monitor</span>
+              </div>
+              <div class="summary-cell highlight-creators-cell">
+                <span class="cell-label">Creators / Developers</span>
+                <span class="cell-value highlight-cyan-glow">Rudra and Anusagar</span>
+              </div>
+              <div class="summary-cell highlight-house-cell">
+                <span class="cell-label">House Name</span>
+                <span class="cell-value highlight-house">Nilgiri (Senior)</span>
+              </div>
+              <div class="summary-cell highlight-house-cell">
+                <span class="cell-label">House Master</span>
+                <span class="cell-value highlight-house">Akhilesh Sir</span>
+              </div>
+              <div class="summary-cell">
+                <span class="cell-label">Project Mentor</span>
+                <span class="cell-value highlight-emerald">Rohitash (ATL Sir)</span>
+              </div>
+              <div class="summary-cell">
+                <span class="cell-label">Sensor Technology</span>
+                <span class="cell-value">DHT22 Digital &amp; MQ-135 Gas</span>
+              </div>
+              <div class="summary-cell">
+                <span class="cell-label">Microcontroller Node</span>
+                <span class="cell-value">ESP32 Dual-Core (Wi-Fi)</span>
+              </div>
+              <div class="summary-cell">
+                <span class="cell-label">Cloud Backend</span>
+                <span class="cell-value">Firebase Realtime Database</span>
+              </div>
+              <div class="summary-cell">
+                <span class="cell-label">Innovation Hub</span>
+                <span class="cell-value">Atal Tinkering Lab, JNV Bijnor</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hardware Specifications Table -->
+          <div class="hardware-specs-table">
+            <div style="padding: 12px 14px; background: #162033; font-weight: 800; font-size: 12px; color: var(--cyan-400); text-transform: uppercase; display: flex; justify-content: space-between; align-items: center;">
+              <span>Station Hardware Specifications</span>
+              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">Rev 3.0</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Microcontroller Node</span>
+              <span class="spec-val">ESP32 Dual-Core (240MHz, Wi-Fi 802.11b/g/n)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Ambient Temp &amp; Humidity</span>
+              <span class="spec-val">Aosong AM2302 / DHT22 High-Precision Digital (-40 to 80°C, 0-100% RH)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Air Quality &amp; Gas Probe</span>
+              <span class="spec-val">MQ-135 Semiconductor Gas Sensor (NH3, NOx, Alcohol, Benzene, Smoke, CO2)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Air Comfort Computation</span>
+              <span class="spec-val">Real-time Heat Index (Rothfusz equation) &amp; Dew Point (Magnus-Tetens)</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Telemetry Pipeline</span>
+              <span class="spec-val">ESP32 → Firebase HTTPS REST / RTDB → App</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Power Supply</span>
+              <span class="spec-val">5V DC Regulated with Solar Backup</span>
+            </div>
+            <div class="spec-row">
+              <span class="spec-label">Reporting Interval</span>
+              <span class="spec-val">10 Seconds Continuous Stream</span>
+            </div>
+          </div>
+
+          <!-- Quick Interactive Actions -->
+          <div class="about-actions-row">
+            <button id="btn-replay-splash" class="btn-secondary" style="flex: 1; padding: 10px 14px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              <span>View Splash Screen</span>
+            </button>
+            <button id="btn-about-view-code" class="btn-secondary" style="flex: 1; padding: 10px 14px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+              <span>ESP32 Firmware</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Bottom Navigation Bar (5 Tabs) -->
+      <nav class="bottom-nav-bar">
+        <!-- 1. Home Tab -->
+        <button class="nav-tab-btn active" data-tab="home" title="Home Dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <!-- 2. Statistics Tab -->
+        <button class="nav-tab-btn" data-tab="statistics" title="Statistics & Charts">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          <span>Stats</span>
+        </button>
+
+        <!-- 3. History Tab -->
+        <button class="nav-tab-btn" data-tab="history" title="History Logs">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          <span>History</span>
+        </button>
+
+        <!-- 4. Alerts Tab -->
+        <button class="nav-tab-btn" data-tab="alerts" title="Campus Alerts">
+          <div id="nav-alert-dot" class="nav-badge-dot"></div>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span>Alerts</span>
+        </button>
+
+        <!-- 5. About Tab -->
+        <button class="nav-tab-btn" data-tab="about" title="About JNV Project">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          <span>About</span>
+        </button>
+      </nav>
+
+    </div>
+
+  </div>
+
+  <!-- ========================================================================
+       MODAL 1: SETTINGS (FIREBASE REST API CONFIGURATION)
+       ======================================================================== -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>Hardware & Cloud Settings</span>
+        </div>
+        <button id="btn-close-settings" class="modal-close-btn">&times;</button>
+      </div>
+
+      <!-- Injected Firebase Credentials Card -->
+      <div class="firebase-config-card">
+        <div class="firebase-config-title">
+          <span>Active Firebase Credentials</span>
+          <span class="status-chip-live">● CONNECTED</span>
+        </div>
+        <div class="firebase-config-grid">
+          <span class="firebase-config-key">Project:</span>
+          <span class="firebase-config-val" id="firebase-display-project">jnv-smart-air-monitor</span>
+          <span class="firebase-config-key">Auth Domain:</span>
+          <span class="firebase-config-val">jnv-smart-air-monitor.firebaseapp.com</span>
+          <span class="firebase-config-key">App ID:</span>
+          <span class="firebase-config-val" style="font-size: 10px;">1:1094219217138:web:ae445bdb42133fa60b386b</span>
+          <span class="firebase-config-key">Storage:</span>
+          <span class="firebase-config-val">jnv-smart-air-monitor.firebasestorage.app</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="settings-url-input">Firebase REST Endpoint URL:</label>
+        <input id="settings-url-input" class="form-input" type="text" placeholder="https://jnv-smart-air-monitor-default-rtdb.firebaseio.com/air_quality.json" />
+        <span style="font-size: 11px; color: var(--text-muted);">Configured Realtime Database endpoint for ESP32 and web app.</span>
+      </div>
+
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 700; color: var(--text-secondary);">
+          <span>Telemetry Polling Frequency:</span>
+          <span id="settings-poll-val" style="color: var(--cyan-400); font-family: var(--font-mono);">10s</span>
+        </div>
+        <input id="settings-poll-slider" type="range" min="5" max="60" step="1" value="10" style="accent-color: var(--cyan-500); width: 100%; cursor: pointer;" />
+      </div>
+
+      <!-- Test Connection & Push Test Packet Box -->
+      <div class="test-connection-box">
+        <div style="flex: 1; min-width: 140px;">
+          <div style="font-size: 11px; color: var(--text-muted);">Connection Diagnostic:</div>
+          <div id="settings-test-status" class="test-status-text">Ready</div>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button id="btn-push-test-telemetry" class="btn-secondary" title="Sync live test sample to Firebase">Push Test Packet</button>
+          <button id="btn-test-api" class="btn-secondary">Test Connection</button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button id="btn-save-settings" class="btn-primary">Apply & Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================
+       MODAL 2: ESP32 CODE & HARDWARE DOCUMENTATION
+       ======================================================================== -->
+  <div id="code-modal" class="modal-overlay">
+    <div class="modal-dialog" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+          <span>ESP32 Arduino Firmware</span>
+        </div>
+        <button id="btn-close-code" class="modal-close-btn">&times;</button>
+      </div>
+
+      <p style="font-size: 12px; color: var(--text-secondary);">
+        Flash this sketch to your ESP32 board using Arduino IDE. Connect DHT22 (AM2302) data pin to GPIO4 with a 10kΩ pull-up resistor, and MQ-135 analog output pin (AO) to GPIO34 (ADC1_CH6).
+      </p>
+
+      <pre id="esp32-code-snippet" class="code-snippet-box"></pre>
+
+      <div class="modal-footer">
+        <button id="btn-copy-code" class="btn-secondary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline; margin-right:4px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          <span>Copy Sketch</span>
+        </button>
+        <button id="btn-download-code" class="btn-primary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="display:inline; margin-right:4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span>Download .ino</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Popup -->
+  <div id="app-toast-popup" class="toast-popup">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--cyan-400)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+    <span id="toast-message-text">Notification</span>
+  </div>
+
+  <!-- Firebase Official SDK (Compat v10 for Vanilla JS) -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <!-- Standalone Script -->
+  <script src="script.js"></script>
+</body>
+</html>
