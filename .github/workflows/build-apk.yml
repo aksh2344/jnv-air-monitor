@@ -12,10 +12,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: '18'
 
       - name: Install Cordova
         run: npm install -g cordova
@@ -26,7 +32,7 @@ jobs:
           rm -rf app/www/*
           cp index.html style.css script.js jnv_logo.png app/www/ 2>/dev/null || cp index.html style.css script.js app/www/ 2>/dev/null || true
           cd app
-          cordova platform add android
+          cordova platform add android --nosave
           cordova build android
 
       - name: Upload APK Artifact
